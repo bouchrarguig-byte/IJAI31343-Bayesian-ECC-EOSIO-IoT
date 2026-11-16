@@ -1,0 +1,144 @@
+{
+  "status": "descriptive offline replay of policy decisions; NOT hardware/energy/attack-accuracy evidence",
+  "source_file": "<LOCAL_HOME>/IJAI_31343_Work/Revision_31343/Experimental_Results/Stage4/Adaptive/Stage4_ADAPTIVE_after_injection.jsonl",
+  "source_sha256": "8515306d57c45830670a993e0dad85b575ab0199d7c48a4c90521adcb2c8ea6d",
+  "model_file": "<LOCAL_HOME>/IJAI_31343_Work/Revision_31343/IJAI_31343_Stage7_Instrumented/Pi_Gateway/intelligent_key_renewal.py",
+  "model_sha256": "d1ce4827990d1f17263ea6cb54e141bc2d9e9f6d343bf8c3c3214041fa14ea64",
+  "config": {
+    "prior_alpha": 1,
+    "prior_beta": 19,
+    "baseline_s": 120,
+    "horizon_s": 600,
+    "minimum_s": 10,
+    "maximum_s": 300,
+    "safety_fraction": 0.7,
+    "confidence": 0.95,
+    "posterior_samples": 1024,
+    "seed": 31343
+  },
+  "n_snapshots": 21,
+  "n_recorded_risk_observations": 5,
+  "n_logged_epoch_activations": 16,
+  "reconstruction_max_absolute_error_s": 0.0,
+  "reconstruction_max_risk_upper_error": 4.696431654682698e-07,
+  "policy_snapshot_summary_all": {
+    "fixed_60": {
+      "n_snapshots": 21,
+      "mean_s": 60.0,
+      "min_s": 60.0,
+      "max_s": 60.0
+    },
+    "fixed_90": {
+      "n_snapshots": 21,
+      "mean_s": 90.0,
+      "min_s": 90.0,
+      "max_s": 90.0
+    },
+    "fixed_120": {
+      "n_snapshots": 21,
+      "mean_s": 120.0,
+      "min_s": 120.0,
+      "max_s": 120.0
+    },
+    "heuristic_2of5": {
+      "n_snapshots": 21,
+      "mean_s": 100,
+      "min_s": 60,
+      "max_s": 120
+    },
+    "bayes_upper_lambda2": {
+      "n_snapshots": 21,
+      "mean_s": 83.23855,
+      "min_s": 72.275009,
+      "max_s": 98.783893
+    },
+    "bayes_upper_lambda4": {
+      "n_snapshots": 21,
+      "mean_s": 64.295805,
+      "min_s": 51.709653,
+      "max_s": 83.942742
+    },
+    "bayes_upper_lambda8": {
+      "n_snapshots": 21,
+      "mean_s": 44.523146,
+      "min_s": 32.955265,
+      "max_s": 64.547648
+    },
+    "bayes_mean_lambda4": {
+      "n_snapshots": 21,
+      "mean_s": 82.44271,
+      "min_s": 67.636364,
+      "max_s": 104.0
+    }
+  },
+  "policy_snapshot_summary_risk_only": {
+    "fixed_60": {
+      "n_snapshots": 5,
+      "mean_s": 60.0,
+      "min_s": 60.0,
+      "max_s": 60.0
+    },
+    "fixed_90": {
+      "n_snapshots": 5,
+      "mean_s": 90.0,
+      "min_s": 90.0,
+      "max_s": 90.0
+    },
+    "fixed_120": {
+      "n_snapshots": 5,
+      "mean_s": 120.0,
+      "min_s": 120.0,
+      "max_s": 120.0
+    },
+    "heuristic_2of5": {
+      "n_snapshots": 5,
+      "mean_s": 72,
+      "min_s": 60,
+      "max_s": 120
+    },
+    "bayes_upper_lambda2": {
+      "n_snapshots": 5,
+      "mean_s": 80.165084,
+      "min_s": 72.275009,
+      "max_s": 89.789148
+    },
+    "bayes_upper_lambda4": {
+      "n_snapshots": 5,
+      "mean_s": 60.449,
+      "min_s": 51.709653,
+      "max_s": 71.730488
+    },
+    "bayes_upper_lambda8": {
+      "n_snapshots": 5,
+      "mean_s": 40.643756,
+      "min_s": 32.955265,
+      "max_s": 51.154
+    },
+    "bayes_mean_lambda4": {
+      "n_snapshots": 5,
+      "mean_s": 78.708225,
+      "min_s": 67.636364,
+      "max_s": 92.571429
+    }
+  },
+  "risk_transition_first_vs_last": {
+    "before_observations": {
+      "risk_upper": 0.107386,
+      "interval_s": 83.942742
+    },
+    "after_last_observation": {
+      "risk_upper": 0.330162,
+      "interval_s": 51.709653
+    }
+  },
+  "limitations": [
+    "Recorded adaptive events are not an independent fixed-policy hardware arm.",
+    "The heuristic consumes the observed success/invalid-event sequence, whose success events depend on the adaptive system's own epoch activations.",
+    "Fixed/heuristic/ablation values represent calculations on the same recorded feedback; not executed rotations.",
+    "The source event labels are not independent ground-truth attack labels.",
+    "A change in renewal decisions does not demonstrate risk reduction, energy saving, FPR, TPR or calibrated prediction.",
+    "T_b=600 s is a scenario assumption, not observed time-to-break, quantum time, or learned output.",
+    "Snapshots are repeated, correlated observations, not independent trials; no significance p-values or CI from these rows.",
+    "The heuristic 2-of-5 threshold is a declared illustrative baseline, not a previously validated industry standard."
+  ]
+}

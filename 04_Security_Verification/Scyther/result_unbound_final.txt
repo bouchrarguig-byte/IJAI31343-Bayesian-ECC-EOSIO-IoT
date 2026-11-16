@@ -1,0 +1,7 @@
+claim	IJAI31343UnboundTTLControl,D	Reachable_D1	-	[32mOk[0m	[at least 1 variant]
+claim	IJAI31343UnboundTTLControl,D	Commit_D2	(G,Life)	[31mFail[0m	[at least 1 attack]
+claim	IJAI31343UnboundTTLControl,D	Niagree_D3	-	[31mFail[0m	[at least 1 attack]
+claim	IJAI31343UnboundTTLControl,D	Nisynch_D4	-	[31mFail[0m	[at least 1 attack]
+claim	IJAI31343UnboundTTLControl,G	Reachable_G2	-	[32mOk[0m	[at least 1 variant]
+claim	IJAI31343UnboundTTLControl,G	Niagree_G3	-	[32mOk[0m	[no attack within bounds]
+claim	IJAI31343UnboundTTLControl,G	Nisynch_G4	-	[32mOk[0m	[no attack within bounds]

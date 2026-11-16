@@ -1,0 +1,90 @@
+{
+  "research_scope": "synthetic input stress tests for an existing Bayesian rotation controller",
+  "date_utc": "2026-11-16T09:52:04.384693+00:00",
+  "model_sha256": "d1ce4827990d1f17263ea6cb54e141bc2d9e9f6d343bf8c3c3214041fa14ea64",
+  "model_path": "<LOCAL_HOME>/IJAI_31343_Work/Revision_31343/IJAI_31343_Stage7_Instrumented/Pi_Gateway/intelligent_key_renewal.py",
+  "scenarios": [
+    "benign",
+    "burst_invalid_proofs",
+    "step_rise",
+    "gradual_ramp",
+    "attack_then_recovery",
+    "forged_alarm_flood"
+  ],
+  "policies": [
+    "fixed60",
+    "fixed90",
+    "fixed120",
+    "heuristic_2of5",
+    "bayes_upper_lambda2",
+    "bayes_upper_lambda4",
+    "bayes_upper_lambda8",
+    "bayes_mean_lambda4",
+    "bayes_window20_lambda4",
+    "bayes_prior_1_9_lambda4",
+    "bayes_prior_1_49_lambda4"
+  ],
+  "simulation_settings": {
+    "replicates_per_scenario": 12,
+    "observations_per_rep": 120,
+    "feedback_sensitivity": "every generated observation is one Bayesian update",
+    "seed_base": 31343,
+    "posterior_samples": 1024,
+    "prior_primary": [
+      1,
+      19
+    ],
+    "confidence": 0.95,
+    "lambda_primary": 4,
+    "assumed_horizon_s": 600.0,
+    "horizon_is_measured": false
+  },
+  "security_unit_tests": [
+    {
+      "test": "missing_or_invalid_horizon_fails_closed",
+      "result": "PASS"
+    },
+    {
+      "test": "too_short_horizon_fails_closed",
+      "result": "PASS"
+    },
+    {
+      "test": "expired_epoch_blocks_old_key",
+      "result": "PASS"
+    },
+    {
+      "test": "unverified_rotation_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "clock_rollback_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "unsupported_feedback_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "forged_alarm_flood_causes_rotation_pressure",
+      "result": "PASS"
+    },
+    {
+      "test": "excessive_risk_fails_closed",
+      "result": "PASS"
+    }
+  ],
+  "synthetic_samples_are_not_hardware_trials": true,
+  "important_limitations": [
+    "All scenarios are designed synthetic gateway feedback, not captured attacks or labels proving compromise.",
+    "Different policies receive the same exogenous observations. In real deployments, observations may depend on policy and rotation schedule.",
+    "Nominal frequency pressure = average 3600/T across snapshot intervals. It is NOT measured rotations, power, or network load.",
+    "Bootstrap resamples independent seeded synthetic sequences. Its CI quantifies variability of the simulator, NOT hardware or security effectiveness.",
+    "Beta-Bernoulli assumes exchangeability; it does not detect unknown attacks, learn adversary capabilities, or predict cryptanalytic time-to-break.",
+    "Prior, lambda, alert probabilities and scenario horizon were not optimized on an independent validation dataset.",
+    "Window20 policy is only a SIMULATED candidate and not implemented or validated in the Stage7 gateway.",
+    "The Monte Carlo 16384-sample posterior quantile is an approximation reference, NOT an exact credible bound.",
+    "Prequential Brier scores predict SYNTHETIC suspicious feedback labels, not real attacks; cannot be reported as IDS precision/recall.",
+    "False alert floods can force shorter intervals and impose denial-of-service costs; current model does not distinguish authentic vs attacker-induced alerts.",
+    "The controller is a key-lifetime selector, not an ECC cryptographic protocol. It cannot by itself establish forward secrecy or post-compromise recovery."
+  ]
+}

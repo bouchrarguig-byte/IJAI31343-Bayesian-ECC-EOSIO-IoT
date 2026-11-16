@@ -1,0 +1,11 @@
+{
+  "timestamp_utc": "2026-11-12T17:36:31.315336+00:00",
+  "experiment": "Stage6_security_isolated",
+  "endpoint": "http://192.0.2.1:8771",
+  "tampered_algorithm_proof_rejected": true,
+  "valid_ack_accepted": true,
+  "valid_ack_replay_rejected": true,
+  "one_epoch_activated": true,
+  "activated_epoch": 1,
+  "passed": true
+}

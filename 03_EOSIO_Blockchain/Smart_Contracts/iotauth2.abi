@@ -1,0 +1,82 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.2",
+    "types": [],
+    "structs": [
+        {
+            "name": "auth_data",
+            "base": "",
+            "fields": [
+                {
+                    "name": "rfid_tag",
+                    "type": "name"
+                },
+                {
+                    "name": "authorized_account",
+                    "type": "name"
+                },
+                {
+                    "name": "last_nonce",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "authenticate",
+            "base": "",
+            "fields": [
+                {
+                    "name": "authorizing_account",
+                    "type": "name"
+                },
+                {
+                    "name": "rfid_tag",
+                    "type": "name"
+                },
+                {
+                    "name": "nonce",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "enroll",
+            "base": "",
+            "fields": [
+                {
+                    "name": "rfid_tag",
+                    "type": "name"
+                },
+                {
+                    "name": "authorized_account",
+                    "type": "name"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "authenticate",
+            "type": "authenticate",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "enroll",
+            "type": "enroll",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "authdata",
+            "type": "auth_data",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "kv_tables": {},
+    "ricardian_clauses": [],
+    "variants": [],
+    "action_results": []
+}

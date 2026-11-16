@@ -1,0 +1,88 @@
+/* IJ-AI 31343: SYMBOLIC CONTROL-PLANE MODEL ONLY.
+   NEGATIVE CONTROL: TTL NOT included in the server ACK MAC.
+   The actual Stage6 v2 transcript authenticates algorithm, device ID,
+   public values, nonces, session ID. SERVER-ACK authenticates epoch + TTL.
+   Stage7 adds similar TTL binding to its own Stage4-derived v1 protocol.
+   Here Mac is a perfect opaque keyed constructor; it abstracts HMAC-SHA256.
+   KD/KG are matching idealized session keys derived from a secret shared
+   abstraction, NOT an implementation-level proof of ECDH or HKDF.
+   Public 'key shares' below are fresh opaque terms; no ECC group equations.
+   The epoch token is modeled fresh, NOT a proof of monotonic integer checking.
+   No key compromise, physical attacks, EOSIO, clock, or counter arithmetic.
+*/
+
+hashfunction Mac;
+const Algorithm, TagServer, TagClient, TagClientKey,
+      TagServerKey, TagDeviceAck, TagServerAck, TagSession: Ticket;
+
+protocol IJAI31343UnboundTTLControl(D,G)
+{
+  role D
+  {
+    fresh Cpub: Nonce;
+    fresh Cnonce: Nonce;
+    var Spub, Snonce, SID, Epoch: Nonce;
+    var Life: Ticket;
+
+    // Secret-key abstraction only: real firmware derives from ECDH + HKDF.
+    macro KD = Mac(TagSession, k(D,G), D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID);
+
+    // /begin request.
+    send_1(D,G, D,Algorithm,Cpub,Cnonce);
+
+    // /begin response; device verifies PSK MAC on full transcript.
+    recv_2(G,D, G,D,Algorithm,Spub,Snonce,SID,
+      Mac(TagServer,k(D,G), D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID));
+
+    // /finish request; PSK MAC plus idealized session-key confirmation.
+    send_3(D,G, SID,
+      Mac(TagClient,k(D,G), D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID),
+      Mac(TagClientKey,KD, D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID));
+
+    // /finish response; gateway proves possession of matching session key.
+    recv_4(G,D, SID,
+      Mac(TagServerKey,KD,D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID));
+
+    // /ack request; device acknowledges the verified session transcript.
+    send_5(D,G, SID,
+      Mac(TagDeviceAck,KD,D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID));
+
+    // /ack response; models the exact difference under test.
+    recv_6(G,D, SID,Epoch,Life,
+      Mac(TagServerAck, KD, D, G, Algorithm, Cpub, Cnonce, Spub, Snonce, SID, Epoch));
+
+    claim_D1(D,Reachable);
+    claim_D2(D,Commit,G,Life);
+    claim_D3(D,Niagree);
+    claim_D4(D,Nisynch);
+  }
+
+  role G
+  {
+    var Cpub, Cnonce: Nonce;
+    fresh Spub, Snonce, SID, Epoch: Nonce;
+    fresh Life: Ticket; // Public, gateway-selected policy token; not secret.
+
+    macro KG = Mac(TagSession, k(D,G), D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID);
+
+    recv_1(D,G, D,Algorithm,Cpub,Cnonce);
+    send_2(G,D, G,D,Algorithm,Spub,Snonce,SID,
+      Mac(TagServer,k(D,G), D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID));
+    recv_3(D,G, SID,
+      Mac(TagClient,k(D,G), D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID),
+      Mac(TagClientKey,KG, D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID));
+    send_4(G,D, SID,
+      Mac(TagServerKey,KG,D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID));
+    recv_5(D,G, SID,
+      Mac(TagDeviceAck,KG,D,G,Algorithm,Cpub,Cnonce,Spub,Snonce,SID));
+
+    // The gateway decides the lifetime and activates epoch before the
+    // device receives /ack; final-ACK loss may cause desynchronization.
+    claim_G1(G,Running,D,Life);
+    send_6(G,D, SID,Epoch,Life,
+      Mac(TagServerAck, KG, D, G, Algorithm, Cpub, Cnonce, Spub, Snonce, SID, Epoch));
+    claim_G2(G,Reachable);
+    claim_G3(G,Niagree);
+    claim_G4(G,Nisynch);
+  }
+}

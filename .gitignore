@@ -1,0 +1,23 @@
+# Do not commit device or development secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+private_config.h
+device_psk.hex
+id_rsa
+id_ed25519
+*.wallet
+wallet.json
+wallets/
+secrets/
+__pycache__/
+*.py[cod]
+node_modules/
+.pio/
+.venv/
+.venv*/
+.DS_Store
+*.swp

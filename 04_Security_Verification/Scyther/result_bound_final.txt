@@ -1,0 +1,7 @@
+claim	IJAI31343BoundTTL,D	Reachable_D1	-	[32mOk[0m	[at least 1 variant]
+claim	IJAI31343BoundTTL,D	Commit_D2	(G,Life)	[32mOk[0m	[no attack within bounds]
+claim	IJAI31343BoundTTL,D	Niagree_D3	-	[32mOk[0m	[no attack within bounds]
+claim	IJAI31343BoundTTL,D	Nisynch_D4	-	[32mOk[0m	[no attack within bounds]
+claim	IJAI31343BoundTTL,G	Reachable_G2	-	[32mOk[0m	[at least 1 variant]
+claim	IJAI31343BoundTTL,G	Niagree_G3	-	[32mOk[0m	[no attack within bounds]
+claim	IJAI31343BoundTTL,G	Nisynch_G4	-	[32mOk[0m	[no attack within bounds]

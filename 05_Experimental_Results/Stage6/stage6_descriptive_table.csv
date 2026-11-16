@@ -1,0 +1,7 @@
+platform,curve,metric,unit,n,mean,sample_sd,median,min,max,p95_nearest_rank
+ESP8266,X25519,renewal_total,ms,9,522.6667,129.0426,463.0,449.0,813.0,813.0
+ESP8266,P256,renewal_total,ms,9,716.4444,53.7218,691.0,665.0,789.0,789.0
+ESP8266,X25519,free_heap_after,bytes,9,45981.3333,88.5438,46056.0,45888.0,46056.0,46056.0
+ESP8266,P256,free_heap_after,bytes,9,44625.7778,106.4164,44688.0,44520.0,44800.0,44800.0
+ESP8266,all,EOSIO_submission_latency,ms,17,104.2196,39.016,96.573,59.22,188.415,188.415
+ESP32,all,EOSIO_submission_latency,ms,21,193.7643,18.8194,198.533,151.76,223.054,219.069

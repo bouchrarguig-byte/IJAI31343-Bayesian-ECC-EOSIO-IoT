@@ -1,0 +1,15 @@
+{
+  "timestamp_utc": "2026-11-16T12:50:15.340897+00:00",
+  "experiment": "Stage7_loopback_fault_injection_lost_ack_response",
+  "scope": "software simulation, local loopback gateway and simulated device only",
+  "source_test_sha256": "b03df9c326b816478d8ea463313d5c823a34858e0e38d9fd34d1918dc9279f8b",
+  "injected_runner_sha256": "a53ba6fc0a6a80a900bfecd1f6f4b1830b29630323ae78a1c9c82f5a18580d1a",
+  "captured_output_sha256": "77cba0cef9fc070920f3562b156a7706a192ab8db509def540f31e7d073fe713",
+  "return_code": 0,
+  "status": "PASS",
+  "limitations": [
+    "A gateway activation may occur before the client receives its acknowledgement.",
+    "No physical packet loss, ESP8266 firmware execution or EOSIO transaction was tested.",
+    "A successful fresh handshake is loopback recovery, not cryptographic post-compromise recovery."
+  ]
+}

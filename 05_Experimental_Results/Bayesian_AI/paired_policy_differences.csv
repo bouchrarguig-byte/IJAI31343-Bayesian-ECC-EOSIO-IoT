@@ -1,0 +1,7 @@
+scenario,comparison,n_paired_synthetic_seeds,paired_mean_difference_s,bootstrap95_difference_low_s,bootstrap95_difference_high_s
+benign,bayes_lambda4_minus_heuristic2of5,12,-23.371438944444446,-24.83936040833333,-21.754693128472223
+burst_invalid_proofs,bayes_lambda4_minus_heuristic2of5,12,-33.28934001111111,-34.79745306805555,-31.897826918055554
+step_rise,bayes_lambda4_minus_heuristic2of5,12,-29.832477981944443,-31.108058454166667,-28.557955365972223
+gradual_ramp,bayes_lambda4_minus_heuristic2of5,12,-26.32026337013889,-28.29020699652778,-24.12579467222222
+attack_then_recovery,bayes_lambda4_minus_heuristic2of5,12,-43.29034891805556,-44.48521472638889,-42.12652830138889
+forged_alarm_flood,bayes_lambda4_minus_heuristic2of5,12,-36.036526727083334,-37.06996395416667,-35.21078027847222

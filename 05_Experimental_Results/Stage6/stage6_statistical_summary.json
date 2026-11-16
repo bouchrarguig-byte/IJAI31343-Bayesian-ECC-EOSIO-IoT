@@ -1,0 +1,364 @@
+{
+  "title": "IJAI31343 Stage6 - analyse descriptive",
+  "root": "<LOCAL_HOME>/IJAI_31343_Work",
+  "limitations": [
+    "Campagnes uniques avec epoques successives correlees: pas d'inference de 39 repetitions independantes.",
+    "Les essais cryptographiques isoles ne sont pas equivalents aux durees du protocole reseau.",
+    "Les attestations EOSIO ici sont retrospectives; la correspondance SHA256 ne prouve pas la provenance physique.",
+    "Aucune economie d'energie ou superiorite de securite quantifiee sans mesure dediee."
+  ],
+  "platforms": {
+    "ESP8266": {
+      "experiment": "Stage6_ESP8266_agility_run5",
+      "run_id": 2026111505,
+      "target_epoch_count": 18,
+      "sources": {
+        "events": {
+          "found": true,
+          "path": "<LOCAL_HOME>/IJAI_31343_Work/Revision_31343/Experimental_Results/Stage6/ESP8266_Agility/stage6_esp8266_run5_events.jsonl",
+          "bytes": 65720,
+          "sha256": "5c0761ef1a08412ad56fb0fb6a72b493fcc519d6c7fa87a62172e1d937dc2ab0"
+        },
+        "serial": {
+          "found": true,
+          "path": "<LOCAL_HOME>/IJAI_31343_Work/Revision_31343/Experimental_Results/Stage6/ESP8266_Agility/ESP8266_Stage6_StackThunk_Run5.log",
+          "bytes": 19896,
+          "sha256": "7ec9ecc998568fea290f99eed38eca16508661041fae83107b4acdb4572364ac"
+        },
+        "eosio_results": {
+          "found": true,
+          "path": "<LOCAL_HOME>/IJAI_31343_Work/EOSIO_Reconstruction/keyepoch/stage6_esp8266_eosio_results.jsonl",
+          "bytes": 4656,
+          "sha256": "0a3ecfe7e94987ea9ea290a6a638e1d2db3e40757c72924769e7f1507cd99df9"
+        },
+        "table": {
+          "found": true,
+          "path": "<LOCAL_HOME>/IJAI_31343_Work/Revision_31343/Experimental_Results/Stage6/Final_EOSIO_Audit/ESP8266_18_attestations.json",
+          "bytes": 4343,
+          "sha256": "07c68a5f78668da22ad0dbf10fbcc78c2b7881b2985ebeb71e9e35c4531dd9d3"
+        }
+      },
+      "gateway": {
+        "records": 325,
+        "activations": 18,
+        "x25519_epochs": 9,
+        "p256_epochs": 9,
+        "epochs_contiguous": true,
+        "alternating": true,
+        "accepted_data": 307,
+        "all_accepted_data_refer_to_activation": true,
+        "accepted_data_per_epoch": {
+          "n": 18,
+          "mean": 17.0556,
+          "median": 17.0,
+          "sd_sample": 0.9984,
+          "min": 15.0,
+          "max": 19.0,
+          "p95_nearest_rank": 19.0
+        },
+        "data_epochs_with_at_least_one_acceptance": 18,
+        "activation_fields": [
+          "algorithm",
+          "algorithm_name",
+          "blockchain_tx",
+          "device_id",
+          "epoch",
+          "events_normal",
+          "events_suspicious",
+          "experiment",
+          "interval_seconds",
+          "kind",
+          "policy_mode",
+          "risk_posterior_upper_mc",
+          "risk_sensitivity",
+          "scenario_horizon_seconds",
+          "ts_utc"
+        ]
+      },
+      "eosio_table": {
+        "attestations": 18,
+        "matches_local_event_hashes": true,
+        "attesters": {
+          "iotauth2": 18
+        }
+      },
+      "eosio_submission": {
+        "result_rows": 17,
+        "submission_latency_ms": {
+          "n": 17,
+          "mean": 104.2196,
+          "median": 96.573,
+          "sd_sample": 39.016,
+          "min": 59.22,
+          "max": 188.415,
+          "p95_nearest_rank": 188.415
+        },
+        "recorded_epochs": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "note": "La taille de l'echantillon de latence peut etre inferieure au nombre d'attestations on-chain."
+      },
+      "serial": {
+        "epochs_parsed": 18,
+        "epoch_numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "algorithms": {
+          "X25519": 9,
+          "P256": 9
+        },
+        "groups": {
+          "X25519": {
+            "epochs": 9,
+            "dh1_ms": {
+              "n": 9,
+              "mean": 162.0341,
+              "median": 162.032,
+              "sd_sample": 0.0099,
+              "min": 162.024,
+              "max": 162.054,
+              "p95_nearest_rank": 162.054
+            },
+            "dh2_ms": {
+              "n": 9,
+              "mean": 162.6706,
+              "median": 162.671,
+              "sd_sample": 0.0196,
+              "min": 162.629,
+              "max": 162.698,
+              "p95_nearest_rank": 162.698
+            },
+            "renewal_total_ms": {
+              "n": 9,
+              "mean": 522.6667,
+              "median": 463.0,
+              "sd_sample": 129.0426,
+              "min": 449.0,
+              "max": 813.0,
+              "p95_nearest_rank": 813.0
+            },
+            "lifetime_s": {
+              "n": 9,
+              "mean": 84.2813,
+              "median": 84.958,
+              "sd_sample": 5.0674,
+              "min": 75.375,
+              "max": 92.109,
+              "p95_nearest_rank": 92.109
+            },
+            "free_heap_after_b": {
+              "n": 9,
+              "mean": 45981.3333,
+              "median": 46056.0,
+              "sd_sample": 88.5438,
+              "min": 45888.0,
+              "max": 46056.0,
+              "p95_nearest_rank": 46056.0
+            }
+          },
+          "P256": {
+            "epochs": 9,
+            "dh1_ms": {
+              "n": 9,
+              "mean": 195.6567,
+              "median": 195.669,
+              "sd_sample": 0.0336,
+              "min": 195.598,
+              "max": 195.69,
+              "p95_nearest_rank": 195.69
+            },
+            "dh2_ms": {
+              "n": 9,
+              "mean": 280.9759,
+              "median": 280.937,
+              "sd_sample": 0.1428,
+              "min": 280.749,
+              "max": 281.222,
+              "p95_nearest_rank": 281.222
+            },
+            "renewal_total_ms": {
+              "n": 9,
+              "mean": 716.4444,
+              "median": 691.0,
+              "sd_sample": 53.7218,
+              "min": 665.0,
+              "max": 789.0,
+              "p95_nearest_rank": 789.0
+            },
+            "lifetime_s": {
+              "n": 9,
+              "mean": 85.7496,
+              "median": 85.525,
+              "sd_sample": 5.1128,
+              "min": 77.465,
+              "max": 94.344,
+              "p95_nearest_rank": 94.344
+            },
+            "free_heap_after_b": {
+              "n": 9,
+              "mean": 44625.7778,
+              "median": 44688.0,
+              "sd_sample": 106.4164,
+              "min": 44520.0,
+              "max": 44800.0,
+              "p95_nearest_rank": 44800.0
+            }
+          }
+        },
+        "p256_thunk_successes": 9,
+        "p256_thunk_memory_b": {
+          "n": 9,
+          "mean": 3698.2222,
+          "median": 3716.0,
+          "sd_sample": 133.9718,
+          "min": 3476.0,
+          "max": 3860.0,
+          "p95_nearest_rank": 3860.0
+        },
+        "data_ok_count": 300,
+        "data_ok_epochs": 18,
+        "panic_markers": 0,
+        "caveat": "Mesures descriptives d'epoques successives d'une meme campagne, non des repetitions independantes."
+      }
+    },
+    "ESP32": {
+      "experiment": "Stage6_curve_agility_run2",
+      "run_id": 2026111206,
+      "target_epoch_count": 21,
+      "sources": {
+        "events": {
+          "found": true,
+          "path": "<LOCAL_HOME>/IJAI_31343_Work/Revision_31343/Experimental_Results/Stage6/CurveAgility_Run2/epoch_events.jsonl",
+          "bytes": 81440,
+          "sha256": "b705ca585d4951a870e0fc2c79dc07a5060a8efd07c66fd2d9eca5684d81cb46"
+        },
+        "eosio_results": {
+          "found": true,
+          "path": "<LOCAL_HOME>/IJAI_31343_Work/EOSIO_Reconstruction/keyepoch/stage6_eosio_archive_results.jsonl",
+          "bytes": 5765,
+          "sha256": "f0981bb625d42b62007d05ad59e68eab40b25c3f04bcda0ecc8f99b7beb81d12"
+        },
+        "table": {
+          "found": true,
+          "path": "<LOCAL_HOME>/IJAI_31343_Work/Revision_31343/Experimental_Results/Stage6/Final_EOSIO_Audit/ESP32_21_attestations.json",
+          "bytes": 5057,
+          "sha256": "547ad352c16159ec1dc9501e11e77293ce6d224ddb3dafa12494284a1ef76612"
+        }
+      },
+      "gateway": {
+        "records": 376,
+        "activations": 21,
+        "x25519_epochs": 11,
+        "p256_epochs": 10,
+        "epochs_contiguous": true,
+        "alternating": true,
+        "accepted_data": 355,
+        "all_accepted_data_refer_to_activation": true,
+        "accepted_data_per_epoch": {
+          "n": 21,
+          "mean": 16.9048,
+          "median": 17.0,
+          "sd_sample": 0.9952,
+          "min": 15.0,
+          "max": 19.0,
+          "p95_nearest_rank": 18.0
+        },
+        "data_epochs_with_at_least_one_acceptance": 21,
+        "activation_fields": [
+          "algorithm",
+          "algorithm_name",
+          "blockchain_tx",
+          "device_id",
+          "epoch",
+          "events_normal",
+          "events_suspicious",
+          "experiment",
+          "interval_seconds",
+          "kind",
+          "policy_mode",
+          "risk_posterior_upper_mc",
+          "risk_sensitivity",
+          "scenario_horizon_seconds",
+          "ts_utc"
+        ]
+      },
+      "eosio_table": {
+        "attestations": 21,
+        "matches_local_event_hashes": true,
+        "attesters": {
+          "iotauth2": 21
+        }
+      },
+      "eosio_submission": {
+        "result_rows": 21,
+        "submission_latency_ms": {
+          "n": 21,
+          "mean": 193.7643,
+          "median": 198.533,
+          "sd_sample": 18.8194,
+          "min": 151.76,
+          "max": 223.054,
+          "p95_nearest_rank": 219.069
+        },
+        "recorded_epochs": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "note": "La taille de l'echantillon de latence peut etre inferieure au nombre d'attestations on-chain."
+      },
+      "serial": null
+    }
+  }
+}

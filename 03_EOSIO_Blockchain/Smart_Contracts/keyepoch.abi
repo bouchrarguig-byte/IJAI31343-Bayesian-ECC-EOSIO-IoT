@@ -1,0 +1,95 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.2",
+    "types": [],
+    "structs": [
+        {
+            "name": "attest",
+            "base": "",
+            "fields": [
+                {
+                    "name": "attester",
+                    "type": "name"
+                },
+                {
+                    "name": "device",
+                    "type": "name"
+                },
+                {
+                    "name": "run_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "epoch",
+                    "type": "uint64"
+                },
+                {
+                    "name": "algorithm",
+                    "type": "uint8"
+                },
+                {
+                    "name": "policy",
+                    "type": "name"
+                },
+                {
+                    "name": "event_hash",
+                    "type": "checksum256"
+                }
+            ]
+        },
+        {
+            "name": "epoch_record",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "attester",
+                    "type": "name"
+                },
+                {
+                    "name": "device",
+                    "type": "name"
+                },
+                {
+                    "name": "epoch",
+                    "type": "uint64"
+                },
+                {
+                    "name": "algorithm",
+                    "type": "uint8"
+                },
+                {
+                    "name": "policy",
+                    "type": "name"
+                },
+                {
+                    "name": "event_hash",
+                    "type": "checksum256"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "attest",
+            "type": "attest",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "attests",
+            "type": "epoch_record",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "kv_tables": {},
+    "ricardian_clauses": [],
+    "variants": [],
+    "action_results": []
+}
