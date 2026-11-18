@@ -76,7 +76,8 @@ wallet/credential protection. Syntax-checking alone is not an EOSIO test.
 
 ## Publication status and licensing
 
-- GitHub URL: **NOT YET CREATED / VERIFIED**.
+- Repository status: Publicly accessible on GitHub.
+- Repository URL: https://github.com/bouchrarguig-byte/IJAI31343-Bayesian-ECC-EOSIO-IoT
 - License: **NOT YET CHOSEN BY THE AUTHORS**. No reuse license is implied.
 - Human review of all 45 files, dependency licenses and study data is required.
 - No live blockchain, firmware flashing or server start is performed by the
