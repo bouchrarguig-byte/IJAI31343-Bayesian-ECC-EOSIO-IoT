@@ -1,6 +1,6 @@
 # IJ-AI 31343 — Reproducibility materials (release candidate)
 
-**Status: PRIVATE PRE-PUBLICATION REVIEW. DO NOT PUBLISH UNTIL MANUALLY APPROVED.**
+
 
 This repository candidate supports the revised manuscript on authenticated
 elliptic-curve key renewal, Bayesian risk-adaptive key lifetime decisions, and
