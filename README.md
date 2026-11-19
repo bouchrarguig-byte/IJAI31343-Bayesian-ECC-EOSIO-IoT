@@ -82,3 +82,27 @@ wallet/credential protection. Syntax-checking alone is not an EOSIO test.
 - Human review of all 45 files, dependency licenses and study data is required.
 - No live blockchain, firmware flashing or server start is performed by the
   preflight generator. No file here grants publication approval.
+
+## Reproducing the numbers in the revised manuscript
+
+One command recomputes the archived hashes, the Stage 4 policy replay, the synthetic aggregates, the T_b sensitivity, the forged-alarm limiter, the EWMA comparison and runs all test suites:
+
+```bash
+pip install -r requirements.txt          # cryptography (SciPy optional, for the independent cross-check)
+python tools/verify_release.py           # add --quick to skip the slowest step
+```
+
+| Manuscript item | Script / file |
+|---|---|
+| Stage 4 replay, 83.94 → 51.71 s | `02_Bayesian_AI/Reproduction/ijai31343_ai_policy_replay.py` |
+| Six synthetic scenarios, Brier scores | `02_Bayesian_AI/Reproduction/ijai31343_adversarial_ai_stats.py` |
+| EWMA baselines | `02_Bayesian_AI/Reproduction/ewma_baseline_comparison.py` |
+| T_b sensitivity | `tb_sensitivity.py` (repository controller); independent check: `tb_sensitivity_scipy_crosscheck.py` |
+| Forged-alarm limiter (offline) | `forged_alarm_flood_demo.py`; independent check: `forged_alarm_limiter.py` |
+| Forged-alarm limiter (gateway, loopback) | `04_Security_Verification/Tests/test_gateway_hardening.py`; execution log: `05_Experimental_Results/Software_Tests/test_gateway_hardening_log.txt` |
+| 39 EOSIO attestation hashes | recomputed by `tools/verify_release.py` |
+| Scyther models | `04_Security_Verification/Scyther/` |
+
+These are offline simulations and local software tests. They do not reproduce the hardware runs, EOSIO transactions or power traces. See `AUDIT_REPORT.md` and `README_REPRODUCTION.md`.
+
+**Known gap:** the gateway in this repository (`gateway_epoch_stage7.py`) is the Stage 7 laboratory gateway (X25519 only, transcript `IJAI31343-v1`). The ESP8266/ESP32 firmware uses transcript `IJAI31343-v2` with an `algorithm` field (X25519 / P-256), and the Stage 6 hardware logs contain that field. The Stage 6 gateway that produced the hardware logs is therefore not in this repository yet; see `AUDIT_REPORT.md`, section 7.

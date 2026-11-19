@@ -6,10 +6,27 @@ rotation. The assumed compromise horizon is a supplied scenario parameter,
 NOT a measured quantum cryptanalysis time or an AI estimate of such a time.
 
 No third-party dependencies. Intended for controlled tests on a Raspberry Pi.
+
+Revision notes (v2, backward compatible -- defaults reproduce the published
+Stage 4 / Stage 7 numbers bit for bit):
+
+* ``posterior_method="exact"`` computes the 95% posterior quantile with the
+  regularised incomplete beta function instead of a seeded Monte-Carlo
+  sample. It removes the Monte-Carlo error that the original docstring asked
+  to be quantified, and it is deterministic and faster. Default stays "mc".
+* ``decay`` (0 < decay <= 1) adds optional exponential forgetting of old
+  observations (discounted Beta-Bernoulli). Default 1.0 = the published
+  cumulative model. It needs ``posterior_method="exact"`` because the counts
+  become non-integer.
+* ``SuspiciousEventLimiter`` caps how many suspicious observations may update
+  the posterior in a sliding time window, which is the rate-limiting
+  mitigation listed (but not implemented) in the manuscript for forged-alarm
+  floods. It is opt-in and unused unless the caller creates one.
 """
 from __future__ import annotations
 
 import argparse
+from collections import deque
 from dataclasses import dataclass
 import json
 import math
@@ -23,6 +40,74 @@ class UnsafePolicyError(RuntimeError):
 
 Event = Literal["success", "failed_auth", "replay", "invalid_proof"]
 _EVENTS = {"success", "failed_auth", "replay", "invalid_proof"}
+_METHODS = {"mc", "exact"}
+
+
+# ---------------------------------------------------------------------------
+# Exact Beta distribution quantile (no third-party dependency)
+# ---------------------------------------------------------------------------
+def _betacf(a: float, b: float, x: float) -> float:
+    """Continued fraction for the incomplete beta function (modified Lentz)."""
+    tiny = 1e-300
+    qab, qap, qam = a + b, a + 1.0, a - 1.0
+    c = 1.0
+    d = 1.0 - qab * x / qap
+    if abs(d) < tiny:
+        d = tiny
+    d = 1.0 / d
+    h = d
+    for m in range(1, 10_000):
+        m2 = 2 * m
+        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
+        d = 1.0 + aa * d
+        d = tiny if abs(d) < tiny else d
+        c = 1.0 + aa / c
+        c = tiny if abs(c) < tiny else c
+        d = 1.0 / d
+        h *= d * c
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
+        d = 1.0 + aa * d
+        d = tiny if abs(d) < tiny else d
+        c = 1.0 + aa / c
+        c = tiny if abs(c) < tiny else c
+        d = 1.0 / d
+        delta = d * c
+        h *= delta
+        if abs(delta - 1.0) < 1e-15:
+            return h
+    raise ArithmeticError("incomplete beta continued fraction did not converge")
+
+
+def betainc(a: float, b: float, x: float) -> float:
+    """Regularised incomplete beta function I_x(a, b) = Beta CDF at x."""
+    if not (a > 0 and b > 0):
+        raise ValueError("Beta parameters must be positive")
+    if x <= 0.0:
+        return 0.0
+    if x >= 1.0:
+        return 1.0
+    log_front = (math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b)
+                 + a * math.log(x) + b * math.log1p(-x))
+    front = math.exp(log_front)
+    if x < (a + 1.0) / (a + b + 2.0):
+        return front * _betacf(a, b, x) / a
+    return 1.0 - front * _betacf(b, a, 1.0 - x) / b
+
+
+def beta_ppf(q: float, a: float, b: float, tol: float = 1e-13) -> float:
+    """Quantile (inverse CDF) of Beta(a, b) by bisection on the exact CDF."""
+    if not (0.0 < q < 1.0):
+        raise ValueError("q must satisfy 0 < q < 1")
+    lo, hi = 0.0, 1.0
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if betainc(a, b, mid) < q:
+            lo = mid
+        else:
+            hi = mid
+        if hi - lo < tol:
+            break
+    return 0.5 * (lo + hi)
 
 
 @dataclass(frozen=True)
@@ -40,11 +125,14 @@ class PolicyConfig:
     confidence: float = 0.95
     posterior_samples: int = 4096
     seed: int = 31343
+    # v2 options (defaults keep the published behaviour).
+    posterior_method: str = "mc"
+    decay: float = 1.0
 
     def __post_init__(self) -> None:
         fields = (self.baseline_seconds, self.minimum_seconds,
                   self.maximum_seconds, self.safety_fraction,
-                  self.risk_sensitivity, self.confidence)
+                  self.risk_sensitivity, self.confidence, self.decay)
         if any(not math.isfinite(x) for x in fields):
             raise ValueError("Every real-valued configuration must be finite")
         if not (0 < self.minimum_seconds <= self.baseline_seconds <= self.maximum_seconds):
@@ -60,6 +148,12 @@ class PolicyConfig:
             raise ValueError("Beta prior parameters must be positive integers")
         if self.posterior_samples < 256:
             raise ValueError("posterior_samples must be >= 256")
+        if self.posterior_method not in _METHODS:
+            raise ValueError("posterior_method must be 'mc' or 'exact'")
+        if not (0 < self.decay <= 1):
+            raise ValueError("decay must satisfy 0 < decay <= 1")
+        if self.decay < 1 and self.posterior_method != "exact":
+            raise ValueError("decay < 1 requires posterior_method='exact'")
 
 
 class BayesianRiskEstimator:
@@ -69,6 +163,9 @@ class BayesianRiskEstimator:
     exchangeability. Real security datasets are rarely iid; this is only a
     candidate model whose calibration and predictive performance must be
     evaluated on independent data before making scientific claims.
+
+    With ``config.decay < 1`` older observations are exponentially
+    discounted, so the posterior can recover after an attack has ended.
     """
 
     def __init__(self, config: PolicyConfig) -> None:
@@ -79,17 +176,20 @@ class BayesianRiskEstimator:
     def observe(self, event: Event) -> None:
         if event not in _EVENTS:
             raise ValueError(f"Unsupported event: {event!r}")
+        if self.config.decay < 1.0:
+            self.anomalies *= self.config.decay
+            self.normal_events *= self.config.decay
         if event == "success":
             self.normal_events += 1
         else:
             self.anomalies += 1
 
     @property
-    def alpha(self) -> int:
+    def alpha(self) -> float:
         return self.config.prior_alpha + self.anomalies
 
     @property
-    def beta(self) -> int:
+    def beta(self) -> float:
         return self.config.prior_beta + self.normal_events
 
     @property
@@ -97,12 +197,15 @@ class BayesianRiskEstimator:
         return self.alpha / (self.alpha + self.beta)
 
     def posterior_upper_bound(self) -> float:
-        """Deterministic Monte-Carlo approximation of posterior quantile.
+        """Upper posterior quantile at ``config.confidence``.
 
-        Not an exact credible bound; Monte-Carlo error should be quantified
-        separately in a journal-grade evaluation. Fixed seed + counts make
-        repeated calls reproducible.
+        ``posterior_method="exact"`` (v2) is deterministic and exact up to
+        floating-point precision. ``"mc"`` (default, as published) is a seeded
+        Monte-Carlo approximation: fixed seed + counts make repeated calls
+        reproducible but the Monte-Carlo error is not zero.
         """
+        if self.config.posterior_method == "exact":
+            return beta_ppf(self.config.confidence, self.alpha, self.beta)
         seed = (self.config.seed + 1000003 * self.alpha +
                 1000033 * self.beta) & ((1 << 64) - 1)
         rng = random.Random(seed)
@@ -111,6 +214,33 @@ class BayesianRiskEstimator:
         index = max(0, min(len(draws) - 1,
                            math.ceil(self.config.confidence * len(draws)) - 1))
         return draws[index]
+
+
+class SuspiciousEventLimiter:
+    """Sliding-window cap on suspicious observations that may move the posterior.
+
+    Mitigation for forged-alarm floods: at most ``max_events`` suspicious
+    observations are accepted per ``window_seconds``; later ones are reported
+    as suppressed so the caller can log them without changing the policy.
+    The caller supplies a monotonic clock (``time.monotonic()``).
+    """
+
+    def __init__(self, max_events: int = 5, window_seconds: float = 60.0) -> None:
+        if max_events < 1 or not math.isfinite(window_seconds) or window_seconds <= 0:
+            raise ValueError("max_events >= 1 and finite window_seconds > 0 required")
+        self.max_events = int(max_events)
+        self.window_seconds = float(window_seconds)
+        self._stamps: deque[float] = deque()
+
+    def allow(self, now: float) -> bool:
+        if not math.isfinite(now):
+            raise ValueError("now must be finite")
+        while self._stamps and now - self._stamps[0] >= self.window_seconds:
+            self._stamps.popleft()
+        if len(self._stamps) >= self.max_events:
+            return False
+        self._stamps.append(now)
+        return True
 
 
 class AdaptiveRotationPolicy:
@@ -146,11 +276,15 @@ class AdaptiveRotationPolicy:
             "interval_seconds": round(interval, 6),
             "assumed_break_horizon_seconds": horizon,
             "risk_posterior_mean": round(self.estimator.posterior_mean, 6),
+            # Key name kept for log compatibility; the value is exact when
+            # posterior_method == "exact".
             "risk_posterior_upper_mc": round(risk_upper, 6),
             "events_normal": self.estimator.normal_events,
             "events_suspicious": self.estimator.anomalies,
             "horizon_source": "externally_provided_scenario_NOT_quantum_break_time",
             "model": "beta_bernoulli_online_risk_frequency",
+            "posterior_method": self.config.posterior_method,
+            "decay": self.config.decay,
         }
 
 

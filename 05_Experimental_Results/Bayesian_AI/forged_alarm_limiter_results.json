@@ -1,0 +1,22 @@
+{
+  "kind": "offline synthetic controller simulation, not hardware or gateway network test",
+  "input": {
+    "forged_invalid_proofs": 50,
+    "within_seconds": 5.0,
+    "limiter": "at most 10 counted suspicious observations per 60 s",
+    "prior_beta": [
+      1,
+      19
+    ],
+    "monte_carlo_samples": 1024,
+    "seed": 31343,
+    "assumed_tb_seconds": 600
+  },
+  "output": {
+    "before_alerts_lifetime_s": 76.3667,
+    "without_limiter_lifetime_s": 28.2266,
+    "with_limiter_lifetime_s": 39.4172,
+    "counted_alerts": 10,
+    "suppressed_alerts": 40
+  }
+}

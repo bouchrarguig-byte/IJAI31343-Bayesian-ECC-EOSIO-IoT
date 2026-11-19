@@ -1,0 +1,2 @@
+# Python >= 3.9. Controller, gateway, replay scripts and tests use the standard library plus:
+cryptography>=41

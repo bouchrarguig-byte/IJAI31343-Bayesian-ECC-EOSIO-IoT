@@ -1,0 +1,6 @@
+assumed_tb_seconds,mean_lifetime_seconds,fraction_capped_by_tb,fraction_rejected,n_observations
+100,64.1207,0.599884,0.0,8640
+150,73.9125,0.018056,0.0,8640
+200,73.9581,0.0,0.0,8640
+600,73.9581,0.0,0.0,8640
+1200,73.9581,0.0,0.0,8640
