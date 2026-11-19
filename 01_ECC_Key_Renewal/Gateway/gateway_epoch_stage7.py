@@ -14,7 +14,9 @@ import hmac
 import json
 import math
 import os
+import re
 import secrets
+import sys
 import threading
 import time
 from datetime import datetime, timezone
@@ -25,15 +27,26 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
-from epoch_protocol import EpochCoordinator, RotationProtocolError
-from intelligent_key_renewal import PolicyConfig, UnsafePolicyError
 
 HERE = Path(__file__).resolve().parent
+# v2: the repository keeps the controller in 02_Bayesian_AI/Controller. A copy
+# placed next to this file (as the loopback tests do) still takes precedence.
+_CONTROLLER_DIR = HERE.parents[1] / '02_Bayesian_AI' / 'Controller'
+if _CONTROLLER_DIR.is_dir() and str(_CONTROLLER_DIR) not in sys.path:
+    sys.path.append(str(_CONTROLLER_DIR))
+try:
+    from epoch_protocol import EpochCoordinator, RotationProtocolError
+except ImportError:  # repository file name
+    from epoch_protocol_stage7 import EpochCoordinator, RotationProtocolError
+from intelligent_key_renewal import PolicyConfig, SuspiciousEventLimiter, UnsafePolicyError
+
 DEVICE_ID = 'testtag1'
 HOST = os.environ.get('IJAI_BIND','0.0.0.0')
 PORT = int(os.environ.get('IJAI_PORT','8767'))
 TTL = 45.0
 MAX_SESSIONS = 24
+MAX_HANDSHAKES_PER_IP = int(os.environ.get('IJAI_MAX_HANDSHAKES_PER_IP','4'))
+_HEX = re.compile(r'[0-9a-fA-F]+\Z')
 # The current lab uses an external, explicitly assumed horizon. No quantum measurement.
 def _number_from_env(name, default):
     val = float(os.environ.get(name,default))
@@ -46,9 +59,15 @@ CFG = PolicyConfig(baseline_seconds=_number_from_env('IJAI_BASELINE_SECONDS',120
                    maximum_seconds=_number_from_env('IJAI_MAX_SECONDS',300),
                    risk_sensitivity=_number_from_env('IJAI_RISK_SENSITIVITY',4.0),
                    posterior_samples=1024)
+# v2: cap how many suspicious observations may move the posterior per window
+# (forged-alarm flood mitigation). 0 disables the cap (original behaviour).
+_MAX_SUSPICIOUS = int(_number_from_env('IJAI_MAX_SUSPICIOUS_PER_WINDOW', 10))
+_SUSPICIOUS_WINDOW = _number_from_env('IJAI_SUSPICIOUS_WINDOW_SECONDS', 60)
+LIMITER = (SuspiciousEventLimiter(_MAX_SUSPICIOUS, _SUSPICIOUS_WINDOW)
+           if _MAX_SUSPICIOUS > 0 else None)
 PSK_FILE = HERE / 'device_psk.hex'
 if not PSK_FILE.is_file():
-    raise SystemExit('Missing Pi_Gateway/device_psk.hex; copy your existing securely provisioned file (do not publish).')
+    raise SystemExit(f'Missing {PSK_FILE}; copy your securely provisioned 32-byte hex PSK there (never commit it).')
 try:
     PSK = bytes.fromhex(PSK_FILE.read_text(encoding='ascii').strip())
 except ValueError:
@@ -73,12 +92,11 @@ def transcript(device_id, cp, cn, sp, sn, sid):
 
 def hexfield(data, name, size):
     raw = data.get(name)
-    if not isinstance(raw,str) or len(raw)!=size*2:
+    # v2: bytes.fromhex() silently skips ASCII whitespace, so a string of the
+    # right length could decode to fewer bytes. Accept only pure hex digits.
+    if not isinstance(raw,str) or len(raw)!=size*2 or not _HEX.fullmatch(raw):
         raise ValueError(f'Invalid {name}')
-    try:
-        return bytes.fromhex(raw)
-    except ValueError as e:
-        raise ValueError(f'Invalid {name}') from e
+    return bytes.fromhex(raw)
 
 def record(kind, **details):
     row = {'ts_utc': datetime.now(timezone.utc).isoformat(),
@@ -92,7 +110,16 @@ def observe_and_record(event):
 
     Caller already holds `lock`. The event may be user-generated and is NOT
     automatically a real attack nor independent ground-truth maliciousness.
+
+    v2: when the sliding-window cap is exhausted the observation is logged as
+    suppressed and does NOT change the posterior, so unauthenticated traffic
+    cannot drive the key lifetime to its floor.
     """
+    if LIMITER is not None and not LIMITER.allow(time.monotonic()):
+        record('risk_observation_suppressed', category=event,
+               max_per_window=_MAX_SUSPICIOUS, window_seconds=_SUSPICIOUS_WINDOW,
+               policy_mode=POLICY_MODE)
+        return
     before = coordinator.policy.select_interval(HORIZON)
     coordinator.observe(event)
     after = coordinator.policy.select_interval(HORIZON)
@@ -155,6 +182,7 @@ class Handler(BaseHTTPRequestHandler):
         sid=secrets.token_bytes(16).hex()
         tx=transcript(DEVICE_ID,cp,cn,sp,sn,sid)
         now=time.monotonic()
+        peer=self.client_address[0]
         with lock:
             expire_pending(now)
             for key in list(handshakes):
@@ -162,11 +190,15 @@ class Handler(BaseHTTPRequestHandler):
                     del handshakes[key]
             if len(handshakes)>=MAX_SESSIONS:
                 return self.json_reply(429,{'error':'too_many_handshakes'})
+            # v2: /begin is unauthenticated, so one source must not be able to
+            # fill the whole table and starve the genuine device.
+            if sum(1 for h in handshakes.values() if h.get('peer')==peer)>=MAX_HANDSHAKES_PER_IP:
+                return self.json_reply(429,{'error':'too_many_handshakes_from_peer'})
             if coordinator.pending is not None:
                 return self.json_reply(409,{'error':'another_handshake_awaits_ack'})
             handshakes[sid]={'private':priv,'pub':bytes.fromhex(cp),
                               'cn':bytes.fromhex(cn),'sn':bytes.fromhex(sn),
-                              'tx':tx,'created':now}
+                              'tx':tx,'created':now,'peer':peer}
         return self.json_reply(200,{'session_id':sid,'server_pub':sp,'server_nonce':sn,
                                     'server_mac':mac(PSK,b'SERVER|'+tx).hex()})
     def finish_handshake(self,body):
@@ -254,17 +286,21 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json_reply(403,{'error':'wrong_epoch_or_session'})
             if not coordinator.authorize_payload(epoch,time.monotonic()):
                 return self.json_reply(403,{'error':'epoch_expired_rotate_first'})
-            if counter<=active['counter']:
-                observe_and_record('replay')
-                return self.json_reply(403,{'error':'replayed_counter'})
+            # v2: verify the MAC BEFORE the counter. The session ID and epoch are
+            # sent in clear, so without this an unauthenticated sender could
+            # inject 'replay' observations just by sending a stale counter. Now
+            # only a genuinely authenticated old message counts as a replay.
             msg=f'DATA|{DEVICE_ID}|{sid}|{epoch}|{counter}|{value}'.encode('ascii')
             if not hmac.compare_digest(tag,mac(active['key'],msg)):
                 observe_and_record('invalid_proof')
                 return self.json_reply(403,{'error':'invalid_data_mac'})
+            if counter<=active['counter']:
+                observe_and_record('replay')
+                return self.json_reply(403,{'error':'replayed_counter'})
             active['counter']=counter
             record('data_accepted',epoch=epoch,counter=counter,value=value,blockchain_tx=False)
         return self.json_reply(200,{'accepted':True,'epoch':epoch,'blockchain_tx':False})
 
 if __name__=='__main__':
-    print(f'STAGE4 LAB: {HOST}:{PORT} policy={POLICY_MODE} sensitivity={CFG.risk_sensitivity} experiment={EXPERIMENT} horizon={HORIZON} sec (NOT quantum); NO EOSIO; DATA HMAC ONLY')
+    print(f'STAGE7 LAB: {HOST}:{PORT} policy={POLICY_MODE} sensitivity={CFG.risk_sensitivity} experiment={EXPERIMENT} horizon={HORIZON} sec (NOT quantum); NO EOSIO; DATA HMAC ONLY')
     ThreadingHTTPServer((HOST,PORT),Handler).serve_forever()

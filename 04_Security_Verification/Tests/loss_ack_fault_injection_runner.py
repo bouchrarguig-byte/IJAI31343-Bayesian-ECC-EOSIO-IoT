@@ -20,7 +20,14 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey,X2
 from cryptography.hazmat.primitives.serialization import Encoding,PublicFormat
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
-SOURCES=Path(__file__).resolve().parents[1]/'Pi_Gateway'
+REPO=Path(__file__).resolve().parents[2]
+# v2: repository layout. Destination file name in the temporary gateway
+# directory -> source file in this repository.
+GATEWAY_FILES={
+    'gateway_epoch.py': REPO/'01_ECC_Key_Renewal/Gateway/gateway_epoch_stage7.py',
+    'epoch_protocol.py': REPO/'01_ECC_Key_Renewal/Gateway/epoch_protocol_stage7.py',
+    'intelligent_key_renewal.py': REPO/'02_Bayesian_AI/Controller/intelligent_key_renewal.py',
+}
 
 def mac(k,m):
     return hmac.new(k,m,hashlib.sha256).digest()
@@ -88,8 +95,8 @@ class TestLoopbackEndToEnd(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp=tempfile.TemporaryDirectory()
         cls.directory=Path(cls.tmp.name)
-        for n in ['gateway_epoch.py','epoch_protocol.py','intelligent_key_renewal.py']:
-            shutil.copy2(SOURCES/n,cls.directory/n)
+        for n,src in GATEWAY_FILES.items():
+            shutil.copy2(src,cls.directory/n)
         cls.psk=os.urandom(32)
         (cls.directory/'device_psk.hex').write_text(cls.psk.hex())
         with socket.socket() as s:

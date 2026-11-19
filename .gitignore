@@ -21,3 +21,5 @@ node_modules/
 .venv*/
 .DS_Store
 *.swp
+config.json
+chain_wallets/

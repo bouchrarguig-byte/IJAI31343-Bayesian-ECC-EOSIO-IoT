@@ -1,0 +1,41 @@
+{
+  "scope": "synthetic sensitivity, no hardware or time-to-compromise measurements",
+  "posterior_quantile": "scipy.stats.beta.ppf(.95,1+s,19+n)",
+  "results": [
+    {
+      "assumed_tb_seconds": 100,
+      "mean_lifetime_seconds": 64.1207,
+      "fraction_capped_by_tb": 0.599884,
+      "fraction_rejected": 0.0,
+      "n_observations": 8640
+    },
+    {
+      "assumed_tb_seconds": 150,
+      "mean_lifetime_seconds": 73.9125,
+      "fraction_capped_by_tb": 0.018056,
+      "fraction_rejected": 0.0,
+      "n_observations": 8640
+    },
+    {
+      "assumed_tb_seconds": 200,
+      "mean_lifetime_seconds": 73.9581,
+      "fraction_capped_by_tb": 0.0,
+      "fraction_rejected": 0.0,
+      "n_observations": 8640
+    },
+    {
+      "assumed_tb_seconds": 600,
+      "mean_lifetime_seconds": 73.9581,
+      "fraction_capped_by_tb": 0.0,
+      "fraction_rejected": 0.0,
+      "n_observations": 8640
+    },
+    {
+      "assumed_tb_seconds": 1200,
+      "mean_lifetime_seconds": 73.9581,
+      "fraction_capped_by_tb": 0.0,
+      "fraction_rejected": 0.0,
+      "n_observations": 8640
+    }
+  ]
+}

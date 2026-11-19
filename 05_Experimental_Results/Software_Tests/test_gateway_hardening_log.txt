@@ -1,0 +1,12 @@
+# test_gateway_hardening.py - execution log
+# date (UTC): 2026-11-19T01:46Z  python: Python 3.13.18
+# Local loopback tests of the Stage 7 gateway; no hardware, Raspberry Pi or network measurement.
+test_unauthenticated_flood_cannot_move_policy_beyond_cap (test_gateway_hardening.TestFloodCap.test_unauthenticated_flood_cannot_move_policy_beyond_cap) ... ok
+test_one_peer_cannot_fill_the_handshake_table (test_gateway_hardening.TestPerPeerHandshakeCap.test_one_peer_cannot_fill_the_handshake_table) ... ok
+test_stale_counter_without_valid_mac_is_not_a_replay (test_gateway_hardening.TestReplayClassification.test_stale_counter_without_valid_mac_is_not_a_replay) ... ok
+test_whitespace_padded_hex_is_rejected (test_gateway_hardening.TestStrictHex.test_whitespace_padded_hex_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.724s
+
+OK

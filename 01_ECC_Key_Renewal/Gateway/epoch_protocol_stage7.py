@@ -8,8 +8,17 @@ No ECC private keys or application session keys are stored here.
 """
 from __future__ import annotations
 from dataclasses import dataclass
+from pathlib import Path
 import re
 import math
+import sys
+
+# v2: make the repository layout importable. A copy of the controller placed
+# next to this file (as the loopback tests do) still wins over this fallback.
+_CONTROLLER_DIR = Path(__file__).resolve().parents[2] / "02_Bayesian_AI" / "Controller"
+if _CONTROLLER_DIR.is_dir() and str(_CONTROLLER_DIR) not in sys.path:
+    sys.path.append(str(_CONTROLLER_DIR))
+
 from intelligent_key_renewal import (
     AdaptiveRotationPolicy, BayesianRiskEstimator, EpochMonitor,
     PolicyConfig, UnsafePolicyError,
